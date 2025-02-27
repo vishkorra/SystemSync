@@ -45,17 +45,32 @@ const getVSCodePaths = () => {
 // Helper function to get directory size
 function getDirectorySize(dirPath: string): number {
   let size = 0
-  if (!existsSync(dirPath)) return size
-
-  const files = readdirSync(dirPath, { withFileTypes: true })
-  for (const file of files) {
-    const filePath = join(dirPath, file.name)
-    if (file.isFile()) {
-      size += statSync(filePath).size
-    } else if (file.isDirectory()) {
-      size += getDirectorySize(filePath)
-    }
+  if (!existsSync(dirPath)) {
+    console.log(`Directory does not exist: ${dirPath}`)
+    return size
   }
+
+  try {
+    const files = readdirSync(dirPath, { withFileTypes: true })
+    for (const file of files) {
+      try {
+        const filePath = join(dirPath, file.name)
+        if (file.isFile()) {
+          const stats = statSync(filePath)
+          size += stats.size
+        } else if (file.isDirectory()) {
+          size += getDirectorySize(filePath)
+        }
+      } catch (error) {
+        console.error(`Error processing file ${file.name} in directory ${dirPath}:`, error)
+        // Continue with next file even if there's an error with this one
+      }
+    }
+  } catch (error) {
+    console.error(`Error reading directory ${dirPath}:`, error)
+  }
+  
+  console.log(`Directory ${dirPath} size: ${size} bytes`)
   return size
 }
 

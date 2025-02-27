@@ -90,21 +90,34 @@ export function VSCodeBackup() {
   }
 
   const refreshSettings = async () => {
+    setIsRefreshing(true)
     try {
-      setIsRefreshing(true)
-      const detected = await detectVSCodeSettings()
-      setSettings(detected)
+      console.log("Detecting VS Code settings...")
+      const detectedSettings = await detectVSCodeSettings()
+      console.log("Detected settings:", detectedSettings)
+      setSettings(detectedSettings)
       
-      toast({
-        title: "Success",
-        description: "VSCode settings detected successfully",
-      })
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to detect VSCode settings",
-        variant: "destructive"
-      })
+      // Check which components exist and have size
+      Object.entries(detectedSettings).forEach(([key, value]) => {
+        const component = value as any;
+        console.log(`Component ${key}: exists=${component.exists}, path=${component.path}, size=${component.size}`);
+      });
+      
+      // Initialize with all settings selected if not already done
+      if (selectedSettings.size === 0) {
+        const newSettings = new Set<string>()
+        if (detectedSettings.userData?.exists) newSettings.add('userData')
+        if (detectedSettings.extensions?.exists) newSettings.add('extensions')
+        if (detectedSettings.extensionGlobalStorage?.exists) newSettings.add('extensionGlobalStorage')
+        if (detectedSettings.workspaceStorage?.exists) newSettings.add('workspaceStorage')
+        if (detectedSettings.application?.exists) newSettings.add('application')
+        setSelectedSettings(newSettings)
+      }
+      
+      setServerStatus('online')
+    } catch (error) {
+      console.error("Error refreshing settings:", error)
+      setServerStatus('offline')
     } finally {
       setIsRefreshing(false)
     }
