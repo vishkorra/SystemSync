@@ -59,7 +59,7 @@ def update_progress(app_name: str, progress: float, status: str = "in-progress")
         "status": status
     }
 
-@app.get("/")
+@app.route("/", methods=["GET", "HEAD"])
 def read_root():
     return {
         "message": "VS Code Backup & Sync API is running",
