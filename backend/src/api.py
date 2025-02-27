@@ -59,6 +59,14 @@ def update_progress(app_name: str, progress: float, status: str = "in-progress")
         "status": status
     }
 
+@app.get("/")
+def read_root():
+    return {
+        "message": "VS Code Backup & Sync API is running",
+        "documentation": "/docs",
+        "status": "online"
+    }
+
 @app.get("/apps")
 async def list_applications() -> List[Dict]:
     """List all detected applications."""
